@@ -33,7 +33,7 @@ function pycketjs_bundle() {
 
 function pycketjs_build () {
     pycketjs_build_modules
-    pycket_js_emcc_package
+    pycketjs_emcc_package
     pycketjs_bundle
 }
 
