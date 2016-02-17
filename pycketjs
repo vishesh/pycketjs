@@ -8,6 +8,7 @@ SCRIPTPATH=`dirname $SCRIPT`
 EMCC_SRC=$SCRIPTPATH/emscripten/
 EMCC_TMP_FILE="pycket_fs_init.js"
 BUILD_FLAGS=""
+PYPY="pypy"
 
 function pycketjs_setup () {
     mkdir racket
@@ -24,7 +25,7 @@ function pycketjs_build_modules() {
 
 function pycketjs_emcc_package() {
     mv build pycketjs
-    python $EMCC_SRC/tools/file_packager.py pycket.js --embed `find pycketjs/ -type f` --js-output-file=$EMCC_TMP_FILE || true
+    python $EMCC_SRC/tools/file_packager.py pycket.js --embed `find pycketjs/ -type f` --lz4 --js-output-file=$EMCC_TMP_FILE || true
     mv pycketjs build
 }
 
@@ -36,6 +37,28 @@ function pycketjs_build () {
     pycketjs_build_modules
     pycketjs_emcc_package
     pycketjs_bundle
+}
+
+function pycketvm_build() {
+    OLD_DIR=`pwd`
+    cd $SCRIPTPATH
+
+    mkdir -p $SCRIPTPATH/pycketvm
+    cd pycketvm
+
+    git clone https://github.com/samth/pycket.git || echo "Pycket already cloned"
+    cd pycket
+
+    docker pull rfkelly/pypyjs-build
+    cp $SCRIPTPATH/Dockerfile .
+    docker build -t vishesh/pycketjs .
+    DOCKER_CMD="docker run -it -v $SCRIPTPATH/pycketvm/pycket:/work -w /work vishesh/pycketjs"
+    
+    hg clone https://vishesh@bitbucket.org/vishesh/pypy || echo "Pypy already cloned"
+    $DOCKER_CMD $PYPY ./pypy/rpython/bin/rpython --backend=js targetpycket.py
+    mv pycket-js-js-nojit $SCRIPTPATH/pycket.js
+
+    cd $OLD_DIR
 }
 
 set -e
@@ -63,8 +86,9 @@ case "$1" in
     "cleanbuild" )
         pycketjs_clean
         pycketjs_build
+	;;
+    "pycketvm-build" )
+        pycketvm_build
         ;;
     * ) echo "Invalid arguments.";;
 esac
-
-
