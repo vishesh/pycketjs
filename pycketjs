@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# PycketJS
+
+CWD=`pwd`
+SCRIPT=`realpath $0`
+SCRIPTPATH=`dirname $SCRIPT`
+EMCC_SRC=$SCRIPTPATH/emscripten/
+EMCC_TMP_FILE="pycket_fs_init.js"
+
+function pycketjs_setup () {
+    mkdir racket
+    cp -a /usr/share/racket/collects racket
+}
+
+function pycketjs_clean () {
+    rm -rf build/ clean/ $EMCC_TMP_FILE
+}
+
+function pycketjs_build_modules() {
+    racket --collects $CWD/racket/collects $SCRIPTPATH/bundle.rkt build.rktl
+}
+
+function pycketjs_emcc_package() {
+    mv build pycketjs
+    python $EMCC_SRC/tools/file_packager.py pycket.js --embed `find pycketjs/ -type f` --js-output-file=$EMCC_TMP_FILE || true
+    mv pycketjs build
+}
+
+function pycketjs_bundle() {
+    cat pycket_fs_init.js $SCRIPTPATH/pycket.js > pycket.js
+}
+
+function pycketjs_build () {
+    pycketjs_build_modules
+    pycket_js_emcc_package
+    pycketjs_bundle
+}
+
+set -e
+
+case "$1" in
+    "setup" )
+	pycketjs_setup
+	;;
+    "clean" )
+	pycketjs_clean
+	;;
+    "build" )
+	pycketjs_build
+	;;
+    "emcc-package" )
+	pycketjs_emcc_package
+	;;
+    "bundle" )
+	pycketjs_bundle
+	;;
+    * ) echo "Invalid arguments.";;
+esac
+
+
