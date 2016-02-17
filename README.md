@@ -1,7 +1,12 @@
 pycketjs
 ========
 
-This is an attempt to run Pycket on JavaScript environment.
+This is an attempt to run [Pycket](https://github.com/samth/pycket) on
+JavaScript environment. We have partially ported
+[pypyjs](https://github.com/pypyjs/pypy) asmjs backend patches to rpython to
+latest PyPy release. Our changes can be found
+[here](https://bitbucket.org/vishesh/pypy). Currently, non-jit target compiles
+successfully.
 
 ## Installation
 
