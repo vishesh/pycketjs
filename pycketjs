@@ -15,7 +15,7 @@ function pycketjs_setup () {
 }
 
 function pycketjs_clean () {
-    rm -rf build/ clean/ $EMCC_TMP_FILE
+    rm -rf build/ clean/ $EMCC_TMP_FILE *.rkt.json
 }
 
 function pycketjs_build_modules() {
