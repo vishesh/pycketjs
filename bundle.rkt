@@ -10,6 +10,7 @@
 (define output-dir (make-parameter (build-path (current-directory) "build/")))
 (define js-prefix (make-parameter "/pycketjs/"))
 (define collects-dir (make-parameter (build-path (current-directory) "racket/collects")))
+(define ignore-collects (make-parameter #f))
 
 (define ++ string-append)
 
@@ -79,19 +80,23 @@
       (define new-path (file-name-in-build fs)) ;; to be copied there
 
       (make-parent-directory* new-path)
-      (copy-file fs new-path)
+      (copy-file fs new-path #t)
       
-      (with-output-to-file (++ new-path ".json")
+      (with-output-to-file (++ new-path ".json") #:exists 'truncate
         (λ ()
           (write-string (rebase-module-ast (port->string in))))))))
+
+(define (collects-file? f)
+  (string-prefix? (path->string f) (path->string (collects-dir))))
 
 (define (make-bundle config)
   (define graph (build-mod-graph (hash-ref config 'files)))
 
   ;; compile and put files in build output
   (for ([(f _) (in-hash graph)])
-    (compile-json-file f)
-    (copy-module f))
+    (unless (and (ignore-collects) (collects-file? f))
+      (compile-json-file f)
+      (copy-module f)))
 
   ;; create and index file listing all output files to be loaded
   #;(call-with-output-file (build-path (output-dir) "index.json")
@@ -110,6 +115,8 @@
    #:once-each
    [("-v" "--verbose") "Compile with verbose messages"
     (verbose-mode #t)]
+   [("--ignore-collects") "Don't compile collects sources"
+    (ignore-collects #t)]
    #:args (bundle-make)
    bundle-make))
 

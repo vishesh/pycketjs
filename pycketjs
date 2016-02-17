@@ -7,6 +7,7 @@ SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
 EMCC_SRC=$SCRIPTPATH/emscripten/
 EMCC_TMP_FILE="pycket_fs_init.js"
+BUILD_FLAGS=""
 
 function pycketjs_setup () {
     mkdir racket
@@ -18,7 +19,7 @@ function pycketjs_clean () {
 }
 
 function pycketjs_build_modules() {
-    racket --collects $CWD/racket/collects $SCRIPTPATH/bundle.rkt build.rktl
+    racket --collects $CWD/racket/collects $SCRIPTPATH/bundle.rkt $BUILD_FLAGS build.rktl
 }
 
 function pycketjs_emcc_package() {
@@ -49,12 +50,20 @@ case "$1" in
     "build" )
 	pycketjs_build
 	;;
+    "quickbuild" )
+        BUILD_FLAGS="--ignore-collects"
+        pycketjs_build
+        ;;
     "emcc-package" )
 	pycketjs_emcc_package
 	;;
     "bundle" )
 	pycketjs_bundle
 	;;
+    "cleanbuild" )
+        pycketjs_clean
+        pycketjs_build
+        ;;
     * ) echo "Invalid arguments.";;
 esac
 
