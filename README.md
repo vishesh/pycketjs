@@ -13,7 +13,16 @@ successfully.
 1. Install Racket, Pycket and NodeJS
 2. If you do not plan to use `pycket.js` included in this repository follow you
    can skip rest of this section.
-3. TODO
+3. Download and install Docker. Clone [pycket](https://github.com/samth/pycket),
+   and asmjs patched PyPy repository [PyPy](https://bitbucket.org/vishesh/pypy).
+4. `docker pull rfkelly/pypyjs-build` will give EMCC in 32-bit environment
+   required to compile Rpython programs to ASMJS. Use the Dockerfile
+   shiiped with repository to build a new Docket image,
+   `docker build -t vishesh/pycketjs`.
+5. Under Docker, compile Pycket by executing -
+  `$PYPY ./pypy/rpython/bin/rpython --backend=js targetpycket.py`
+6. mv pycket-js-js-nojit $SCRIPTPATH/pycket.js
+
 
 ## Usage
 
